@@ -1,0 +1,1 @@
+# Vercel serves the browser-only public site, so no Python packages are required.

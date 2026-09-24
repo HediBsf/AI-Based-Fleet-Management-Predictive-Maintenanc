@@ -1,0 +1,10 @@
+flask
+werkzeug
+opencv-python-headless
+numpy
+ultralytics
+tensorflow
+onnx
+onnxruntime
+Pillow
+roboflow

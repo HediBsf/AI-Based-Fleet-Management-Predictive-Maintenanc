@@ -1,0 +1,66 @@
+STEP 1  Gather Data (Images only)
+    Seatbelt (on / off)
+    Phone usage (using phone / safe)
+    Drowsiness (eyes open / closed, yawn)
+
+STEP 2 Organize Data
+    Split images into:
+        train (80%)
+        val (20%)
+
+dataset/
+ ├─ seatbelt/
+ │   ├─ train/
+ │   └─ val/
+ ├─ phone/
+ │   ├─ train/
+ │   └─ val/
+ └─ drowsiness/
+     ├─ train/
+     └─ val/
+
+
+STEP 3 Train Small CNN Models:
+    Train one CNN per task:
+        Seatbelt CNN
+        Phone CNN
+        Drowsiness CNN
+
+STEP 4 Test Models on Images
+    Check:
+    Accuracy
+    Wrong predictions
+
+    Improve by:
+    Adding more images
+    Balancing classes
+
+STEP 5 Real-Time Camera Detection
+
+Use OpenCV to:
+    Open webcam
+        Capture frames
+    Pass frames to models
+    Get predictions
+
+STEP 6 Decision Logic
+
+Simple rules:
+
+If seatbelt off → warning
+
+If phone detected → warning
+
+If eyes closed for long → drowsy alert
+
+
+STEP 7 Show Alerts
+
+Display text on screen:
+
+“Wear seatbelt”
+
+“Do not use phone”
+
+“Drowsy driver detected”
+

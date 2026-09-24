@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local data / uploads
+static/uploads/
+**/uploads/
+**/data/
+
+# Model files and large binaries
+*.pt
+*.h5
+*.onnx
+*.weights
+*.bin
+*.ckpt
+*.joblib
+*.pkl
+*.zip
+*.tar
+*.gz
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Build / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/

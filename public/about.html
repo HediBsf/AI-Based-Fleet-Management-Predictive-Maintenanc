@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How the Driver Monitoring System Works | YOLOv8, YOLO11 and CNN</title>
+  <meta name="description" content="Technical documentation for a student Driver Monitoring System project: datasets, YOLOv8 and YOLO11 classes, CNN architecture, training metrics, image preprocessing, NMS, deployment, and team contributions.">
+  <meta name="keywords" content="driver monitoring system project, YOLOv8 student project, YOLO11 driver behavior, CNN driver monitoring, computer vision mini project, driver behavior dataset, non maximum suppression">
+  <meta name="author" content="Driver Monitoring System Project Team">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="canonical" href="/about.html">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Inside the Driver Monitoring System Student Project">
+  <meta property="og:description" content="Explore the datasets, model classes, training metrics, preprocessing, NMS, architecture, and contributors behind this YOLO and CNN project.">
+  <meta property="og:image" content="/demo-images/1_seatbelt.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "How the Driver Monitoring System Works",
+    "description": "Technical documentation for an academic driver behavior analysis project using YOLOv8, YOLO11, ONNX Runtime Web, TensorFlow CNN, Flask, and non-maximum suppression.",
+    "about": ["Driver Monitoring System", "Computer Vision", "YOLOv8", "YOLO11", "Convolutional Neural Network", "Non-Maximum Suppression"],
+    "audience": {"@type": "EducationalAudience", "educationalRole": "student"},
+    "isPartOf": {"@type": "SoftwareApplication", "name": "Driver Monitoring System", "applicationCategory": "EducationalApplication"},
+    "codeRepository": "https://github.com/AlbatrossC/Driver-Monitoring-System"
+  }
+  </script>
+  <style>
+    :root {
+      --ink: #161a22;
+      --text: #354052;
+      --muted: #667085;
+      --line: #dde3ea;
+      --soft: #f6f8fa;
+      --green: #087f5b;
+      --green-soft: #ecfdf5;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --red: #be123c;
+      --red-soft: #fff1f2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+    body {
+      color: var(--ink);
+      background: #fff;
+      font-family: "Aptos", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    svg { display: block; max-width: 100%; }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 64px;
+      padding: 0 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(12px);
+    }
+    .logo { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; }
+    .logo-mark {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      border: 2px solid var(--ink); border-radius: 8px; font-size: 12px; font-weight: 750;
+    }
+    .logo-copy { display: grid; line-height: 1.05; }
+    .logo-title { font-size: 17px; font-weight: 700; }
+    .logo-sub { margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .7px; }
+    .nav { display: flex; align-items: center; gap: 19px; }
+    .nav a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 650; }
+    .nav a:hover, .nav a.active { color: var(--ink); }
+    .nav .github { min-height: 38px; padding: 0 15px; display: inline-flex; align-items: center; gap: 8px; border-radius: 7px; background: var(--ink); color: #fff; }
+
+    .page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .hero {
+      min-height: calc(100vh - 64px);
+      padding: 54px 0 48px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(410px, .98fr);
+      gap: 48px;
+      align-items: center;
+    }
+    .eyebrow { color: var(--green); font-size: 12px; font-weight: 750; text-transform: uppercase; letter-spacing: .8px; }
+    h1 { margin-top: 16px; max-width: 700px; font-size: clamp(43px, 5vw, 68px); line-height: .99; font-weight: 680; letter-spacing: 0; }
+    .lead { margin-top: 21px; max-width: 690px; color: var(--text); font-size: 18px; }
+    .hero-actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .button { min-height: 43px; padding: 0 17px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: #fff; text-decoration: none; font-size: 13px; font-weight: 700; }
+    .button.primary { border-color: var(--ink); background: var(--ink); color: #fff; }
+    .hero-facts { margin-top: 30px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); border-top: 1px solid var(--line); }
+    .hero-fact { padding: 17px 13px 0 0; }
+    .hero-fact strong { display: block; font-size: 22px; font-weight: 700; }
+    .hero-fact span { color: var(--muted); font-size: 12px; }
+    .hero-visual, .diagram { border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; overflow: hidden; }
+    .hero-visual { padding: 20px; }
+
+    .section { padding: 66px 0; border-top: 1px solid var(--line); }
+    .section-head { max-width: 810px; margin-bottom: 30px; }
+    .kicker { color: var(--green); font-size: 12px; font-weight: 750; text-transform: uppercase; letter-spacing: .75px; }
+    h2 { margin-top: 8px; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.08; font-weight: 680; }
+    .section-head > p { margin-top: 13px; color: var(--muted); font-size: 16px; }
+    h3 { font-size: 20px; line-height: 1.25; font-weight: 700; }
+    h4 { font-size: 14px; font-weight: 750; text-transform: uppercase; letter-spacing: .45px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .card { padding: 21px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .card p { margin-top: 8px; color: var(--muted); font-size: 14px; }
+    .card ul, .details-list { margin: 12px 0 0 18px; color: var(--text); font-size: 14px; }
+    .card li + li, .details-list li + li { margin-top: 6px; }
+    .tag-row { margin-top: 13px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag { padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--soft); color: #344054; font-size: 11px; font-weight: 680; }
+    .callout { padding: 18px 20px; border-left: 4px solid var(--amber); border-radius: 7px; background: var(--amber-soft); color: #713f12; }
+    .callout strong { display: block; font-size: 16px; }
+    .callout p { margin-top: 5px; font-size: 14px; }
+    .note-green { border-left-color: var(--green); background: var(--green-soft); color: #065f46; }
+
+    .toc { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+    .toc a { min-height: 62px; padding: 13px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 680; }
+    .toc a:hover { border-color: #98a2b3; background: var(--soft); }
+    .toc span { color: var(--green); font-size: 17px; }
+
+    .model { padding: 34px 0; border-top: 1px solid var(--line); }
+    .model:first-of-type { border-top: 0; padding-top: 0; }
+    .model-head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; align-items: start; }
+    .model-id { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; }
+    .model-head h3 { margin-top: 5px; font-size: 29px; font-weight: 680; }
+    .model-head p { margin-top: 9px; max-width: 800px; color: var(--muted); }
+    .runtime-badge { padding: 7px 10px; border: 1px solid #a7f3d0; border-radius: 999px; background: var(--green-soft); color: #047857; font-size: 11px; font-weight: 750; white-space: nowrap; }
+    .runtime-badge.local { border-color: #bfdbfe; background: var(--blue-soft); color: #1d4ed8; }
+    .model-grid { margin-top: 22px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+    .class-grid { margin-top: 14px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+    .class-item { padding: 11px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--soft); }
+    .class-item strong { display: block; font-size: 13px; }
+    .class-item span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .config-table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 13px; }
+    .config-table th, .config-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+    .config-table th { width: 45%; color: var(--muted); font-weight: 650; }
+    .config-table td { color: var(--ink); font-weight: 650; }
+    .config-table tr:last-child th, .config-table tr:last-child td { border-bottom: 0; }
+
+    .metrics { margin-top: 16px; display: grid; gap: 11px; }
+    .metric-top { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+    .metric-top span { color: var(--muted); }
+    .metric-top strong { font-weight: 750; }
+    .metric-track { height: 8px; border-radius: 999px; background: #e9edf2; overflow: hidden; }
+    .metric-fill { height: 100%; border-radius: inherit; background: var(--green); }
+    .metric-fill.blue { background: var(--blue); }
+    .metric-fill.amber { background: var(--amber); }
+    .source-link { margin-top: 13px; display: inline-flex; align-items: center; gap: 7px; color: var(--blue); font-size: 13px; font-weight: 700; text-decoration: none; }
+    .source-link:hover { text-decoration: underline; }
+
+    .pipeline { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; }
+    .pipe-step { position: relative; min-height: 132px; padding: 16px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+    .pipe-step:not(:last-child)::after { content: ""; position: absolute; top: 50%; right: -11px; width: 11px; height: 2px; background: var(--green); z-index: 2; }
+    .pipe-num { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; background: var(--green-soft); color: var(--green); font-size: 12px; font-weight: 750; }
+    .pipe-step h3 { margin-top: 12px; font-size: 15px; }
+    .pipe-step p { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .nms-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 20px; align-items: stretch; }
+    .formula { margin: 14px 0; padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--soft); font-family: Consolas, monospace; font-size: 13px; color: #273142; overflow-x: auto; }
+    .algorithm { counter-reset: algo; display: grid; gap: 10px; }
+    .algorithm li { list-style: none; position: relative; padding-left: 42px; color: var(--text); font-size: 14px; }
+    .algorithm li::before { counter-increment: algo; content: counter(algo); position: absolute; left: 0; top: 0; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 6px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 750; }
+
+    .split { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+    .runtime-card { padding: 22px; border: 1px solid var(--line); border-radius: 8px; }
+    .runtime-card h3 { display: flex; align-items: center; gap: 9px; }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+    .runtime-card.local .status-dot { background: var(--blue); }
+    .runtime-card p { margin-top: 9px; color: var(--muted); font-size: 14px; }
+    .runtime-card code { padding: 2px 5px; border-radius: 4px; background: var(--soft); font-family: Consolas, monospace; font-size: 12px; }
+
+    .team-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 13px; }
+    .person { padding: 19px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .person-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 7px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 750; }
+    .person h3 { margin-top: 14px; font-size: 17px; }
+    .person p { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .program { margin-top: 18px; display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
+    .program-list { display: grid; gap: 10px; }
+    .program-row { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+    .program-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .program-row span { display: block; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .55px; }
+    .program-row strong { display: block; margin-top: 3px; font-size: 14px; }
+    .github-panel { padding: 27px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-radius: 8px; background: var(--ink); color: #fff; }
+    .github-panel p { margin-top: 6px; max-width: 650px; color: #cbd5e1; font-size: 14px; }
+    .github-panel .button { flex: 0 0 auto; border-color: #fff; background: #fff; }
+    .footer { padding: 28px 0 34px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 960px) {
+      .hero, .model-grid, .nms-layout, .program { grid-template-columns: 1fr; }
+      .hero { min-height: auto; }
+      .hero-visual { max-width: 650px; }
+      .toc { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .pipeline { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .pipe-step:not(:last-child)::after { display: none; }
+      .team-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 650px) {
+      .header { padding: 0 17px; }
+      .logo-sub, .nav .github span, .nav > a:first-child { display: none; }
+      .nav { gap: 13px; }
+      .page { width: min(100% - 30px, 1180px); }
+      .hero { padding-top: 38px; gap: 30px; }
+      h1 { font-size: 40px; }
+      .hero-facts, .grid-2, .grid-3, .split, .pipeline, .team-grid, .class-grid { grid-template-columns: 1fr; }
+      .section { padding: 48px 0; }
+      .toc { grid-template-columns: 1fr; }
+      .model-head { grid-template-columns: 1fr; }
+      .runtime-badge { width: fit-content; }
+      .github-panel { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="logo" aria-label="Driver Monitor home">
+      <span class="logo-mark">DM</span>
+      <span class="logo-copy"><span class="logo-title">Driver Monitor</span><span class="logo-sub">Academic AI system</span></span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/">Analyze</a>
+      <a href="/about.html" class="active">About</a>
+      <a class="github" href="https://github.com/AlbatrossC/Driver-Monitoring-System" target="_blank" rel="noopener noreferrer">
+        <span>GitHub</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Technical project documentation</p>
+        <h1>Inside the Driver Monitoring System.</h1>
+        <p class="lead">A notebook-backed explanation of the datasets, three model pipelines, image preparation, detection merging, model results, deployment architecture, and people behind this academic computer vision project.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="/">Run the Project</a>
+          <a class="button" href="#models">Explore Models</a>
+          <a class="button" href="https://github.com/AlbatrossC/Driver-Monitoring-System" target="_blank" rel="noopener noreferrer">View Source</a>
+        </div>
+        <div class="hero-facts">
+          <div class="hero-fact"><strong>3</strong><span>trained model pipelines</span></div>
+          <div class="hero-fact"><strong>13</strong><span>source labels across YOLO</span></div>
+          <div class="hero-fact"><strong>2</strong><span>runtime deployment modes</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <svg viewBox="0 0 700 520" role="img" aria-labelledby="heroDiagramTitle heroDiagramDesc">
+          <title id="heroDiagramTitle">Driver Monitoring System architecture</title>
+          <desc id="heroDiagramDesc">The input image is preprocessed and sent to two browser YOLO detectors and one local CNN. YOLO detections pass through NMS while the CNN classification joins the final report separately.</desc>
+          <defs>
+            <marker id="heroArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0 0l10 5-10 5z" fill="#087f5b"/>
+            </marker>
+            <marker id="heroArrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0 0l10 5-10 5z" fill="#2563eb"/>
+            </marker>
+          </defs>
+          <rect width="700" height="520" rx="12" fill="#f7f9fc"/>
+          <g font-family="Aptos, Segoe UI, sans-serif">
+            <text x="30" y="38" fill="#667085" font-size="12" font-weight="700">MULTI-MODEL INFERENCE ARCHITECTURE</text>
+
+            <rect x="30" y="132" width="145" height="82" rx="8" fill="#fff" stroke="#cfd7e2"/>
+            <rect x="48" y="151" width="38" height="38" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+            <path d="M56 181l9-10 7 6 7-9" fill="none" stroke="#087f5b" stroke-width="2.5"/>
+            <circle cx="76" cy="160" r="3.5" fill="#087f5b"/>
+            <text x="98" y="165" fill="#161a22" font-size="14" font-weight="700">Input image</text>
+            <text x="98" y="185" fill="#667085" font-size="10">JPG or PNG</text>
+
+            <path d="M175 173h35" fill="none" stroke="#087f5b" stroke-width="3" marker-end="url(#heroArrowGreen)"/>
+            <rect x="214" y="132" width="156" height="82" rx="8" fill="#fff" stroke="#cfd7e2"/>
+            <text x="292" y="165" text-anchor="middle" fill="#161a22" font-size="14" font-weight="700">Preprocessing</text>
+            <text x="292" y="186" text-anchor="middle" fill="#667085" font-size="10">letterbox + normalization</text>
+
+            <path d="M370 173h28V76h27M398 173h27M398 173v90h27" fill="none" stroke="#087f5b" stroke-width="3" marker-end="url(#heroArrowGreen)" stroke-linejoin="round"/>
+            <circle cx="398" cy="173" r="4" fill="#087f5b"/>
+
+            <g fill="#fff" stroke="#cfd7e2">
+              <rect x="430" y="45" width="160" height="62" rx="8"/>
+              <rect x="430" y="142" width="160" height="62" rx="8"/>
+              <rect x="430" y="232" width="160" height="62" rx="8"/>
+            </g>
+            <g fill="#161a22" font-size="14" font-weight="700" text-anchor="middle">
+              <text x="510" y="72">YOLO11n</text>
+              <text x="510" y="169">YOLOv8n</text>
+              <text x="510" y="259">Keras CNN</text>
+            </g>
+            <g fill="#667085" font-size="10" text-anchor="middle">
+              <text x="510" y="91">8 detection classes</text>
+              <text x="510" y="188">5 detection classes</text>
+              <text x="510" y="278">5 classification classes</text>
+            </g>
+
+            <text x="611" y="43" fill="#2563eb" font-size="9" font-weight="700">DETECTIONS</text>
+            <path d="M590 76h30v284h-30M590 173h18v187h-18" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#heroArrowBlue)" stroke-linejoin="round"/>
+            <rect x="405" y="322" width="185" height="76" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+            <text x="497" y="353" text-anchor="middle" fill="#1d4ed8" font-size="14" font-weight="700">NMS + class mapping</text>
+            <text x="497" y="375" text-anchor="middle" fill="#667085" font-size="10">merge overlapping YOLO detections</text>
+
+            <rect x="430" y="438" width="160" height="54" rx="8" fill="#161a22"/>
+            <text x="510" y="461" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Unified result</text>
+            <text x="510" y="478" text-anchor="middle" fill="#cbd5e1" font-size="10">detections + CNN class</text>
+            <path d="M497 398v35" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#heroArrowBlue)"/>
+            <path d="M590 263h46v202h-46" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#heroArrowBlue)" stroke-linejoin="round"/>
+            <text x="641" y="329" transform="rotate(90 641 329)" text-anchor="middle" fill="#2563eb" font-size="9" font-weight="700">LOCAL CNN CLASSIFICATION</text>
+
+            <rect x="30" y="323" width="325" height="142" rx="8" fill="#fff" stroke="#cfd7e2"/>
+            <text x="50" y="352" fill="#087f5b" font-size="10" font-weight="700">DEPLOYMENT RULE</text>
+            <circle cx="52" cy="380" r="4" fill="#087f5b"/>
+            <text x="65" y="384" fill="#161a22" font-size="12" font-weight="700">Vercel</text>
+            <text x="123" y="384" fill="#667085" font-size="11">YOLO models run in the browser</text>
+            <circle cx="52" cy="414" r="4" fill="#2563eb"/>
+            <text x="65" y="418" fill="#161a22" font-size="12" font-weight="700">Local Flask</text>
+            <text x="139" y="418" fill="#667085" font-size="11">YOLO models + CNN API</text>
+            <text x="50" y="444" fill="#667085" font-size="10">Green: image flow  ·  Blue: model outputs</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="contents-title">
+      <div class="section-head"><p class="kicker">Project guide</p><h2 id="contents-title">Everything needed for a report or viva.</h2><p>The page follows the complete journey from training data to final result, with the exact settings and metrics stored in this repository.</p></div>
+      <nav class="toc" aria-label="About page sections">
+        <a href="#architecture">System architecture <span>01</span></a>
+        <a href="#datasets">Datasets <span>02</span></a>
+        <a href="#models">Models and classes <span>03</span></a>
+        <a href="#preprocessing">Preprocessing <span>04</span></a>
+        <a href="#nms">NMS algorithm <span>05</span></a>
+        <a href="#runtime">Runtime modes <span>06</span></a>
+        <a href="#limitations">Limitations <span>07</span></a>
+        <a href="#team">Team <span>08</span></a>
+      </nav>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="section-head"><p class="kicker">System architecture</p><h2>Detection and classification serve different purposes.</h2><p>YOLO predicts a behavior class, confidence score, and bounding box for each detected region. The CNN classifies the entire image into one behavior category. Combining them gives a richer academic comparison between object detection and image classification.</p></div>
+      <div class="diagram">
+        <svg viewBox="0 0 1100 330" role="img" aria-labelledby="systemTitle systemDesc">
+          <title id="systemTitle">End-to-end inference flow</title><desc id="systemDesc">The uploaded image is prepared, sent to parallel model branches, post-processed, and displayed as a result.</desc>
+          <rect width="1100" height="330" fill="#fbfcfe"/>
+          <g font-family="Aptos, Segoe UI, sans-serif">
+            <g fill="#fff" stroke="#d5dce5"><rect x="32" y="110" width="135" height="100" rx="8"/><rect x="215" y="110" width="150" height="100" rx="8"/><rect x="430" y="38" width="170" height="76" rx="8"/><rect x="430" y="127" width="170" height="76" rx="8"/><rect x="430" y="216" width="170" height="76" rx="8"/><rect x="665" y="80" width="165" height="76" rx="8"/><rect x="665" y="174" width="165" height="76" rx="8"/><rect x="895" y="110" width="170" height="100" rx="8"/></g>
+            <g fill="#161a22" font-size="15" font-weight="700" text-anchor="middle"><text x="99" y="149">Uploaded</text><text x="99" y="172">image</text><text x="290" y="149">Image</text><text x="290" y="172">preparation</text><text x="515" y="71">Soham YOLO11n</text><text x="515" y="160">Chaitanya YOLOv8n</text><text x="515" y="249">Mishra CNN</text><text x="747" y="114">Confidence filter</text><text x="747" y="208">NMS + mapping</text><text x="980" y="149">Visual result</text><text x="980" y="172">and report</text></g>
+            <g fill="#667085" font-size="10" text-anchor="middle"><text x="99" y="191">one or many files</text><text x="290" y="191">resize + normalize</text><text x="515" y="92">ONNX Runtime Web</text><text x="515" y="181">ONNX Runtime Web</text><text x="515" y="270">TensorFlow / Flask</text><text x="747" y="136">score &gt; 0.25</text><text x="747" y="230">IoU threshold 0.45</text><text x="980" y="191">boxes + confidence</text></g>
+            <g stroke="#087f5b" stroke-width="3" fill="none"><path d="M167 160h48"/><path d="M365 160c32 0 33-84 65-84M365 160h65M365 160c32 0 33 94 65 94"/><path d="M600 76c35 0 30 42 65 42M600 165c35 0 30-47 65-47M600 254c35 0 30-42 65-42"/><path d="M830 118c34 0 31 42 65 42M830 212c34 0 31-52 65-52"/></g>
+          </g>
+        </svg>
+      </div>
+      <div class="grid-3" style="margin-top:16px">
+        <article class="card"><h3>Training layer</h3><p>Jupyter notebooks inspect datasets, train pretrained nano models, validate performance, and save weights plus charts and prediction artifacts.</p></article>
+        <article class="card"><h3>Inference layer</h3><p>Exported ONNX weights run client-side for YOLO. The Keras <code>.h5</code> model is loaded only by the local Flask server.</p></article>
+        <article class="card"><h3>Presentation layer</h3><p>The browser maps model-specific labels into shared behavior names, suppresses duplicate boxes, and builds an understandable result report.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="datasets">
+      <div class="section-head"><p class="kicker">Dataset documentation</p><h2>Two labeled detection datasets and one directory-based CNN dataset.</h2><p>Each YOLO dataset uses images paired with bounding-box labels and defines separate training, validation, and test folders. Both YOLO dataset configurations identify their source as Roboflow Universe under CC BY 4.0.</p></div>
+      <div class="grid-2">
+        <article class="card">
+          <h3>Soham YOLO11 dataset</h3>
+          <p><strong>Roboflow project:</strong> Driver Monitoring System, version 1. The dataset has eight classes and was reviewed for class imbalance before training.</p>
+          <table class="config-table"><tr><th>Training images</th><td><code>train/images</code></td></tr><tr><th>Validation images</th><td><code>valid/images</code></td></tr><tr><th>Test images</th><td><code>test/images</code></td></tr><tr><th>Annotation format</th><td>YOLO bounding boxes</td></tr><tr><th>License</th><td>CC BY 4.0</td></tr></table>
+          <a class="source-link" href="https://universe.roboflow.com/dataset-b2ns9/driver-monitoring-system-v0mei-mpvgx/dataset/1" target="_blank" rel="noopener noreferrer">Open Soham dataset source →</a>
+        </article>
+        <article class="card">
+          <h3>Chaitanya YOLOv8 dataset</h3>
+          <p><strong>Roboflow project:</strong> Abnormal Driver Behaviour, version 1. Its five classes focus on observable objects and activities around the driver.</p>
+          <table class="config-table"><tr><th>Training images</th><td><code>train/images</code></td></tr><tr><th>Validation images</th><td><code>valid/images</code></td></tr><tr><th>Test images</th><td><code>test/images</code></td></tr><tr><th>Annotation format</th><td>YOLO bounding boxes</td></tr><tr><th>License</th><td>CC BY 4.0</td></tr></table>
+          <a class="source-link" href="https://universe.roboflow.com/computer-vision-ao07t/abnormal-driver-behaviour-bh1gs/dataset/1" target="_blank" rel="noopener noreferrer">Open Chaitanya dataset source →</a>
+        </article>
+      </div>
+      <article class="card" style="margin-top:16px">
+        <h3>Divyanshu CNN dataset</h3>
+        <p>The CNN notebook loads <code>Multi-Class Driver Behavior Image Dataset</code> with Keras <code>image_dataset_from_directory</code>. Folder names become class labels automatically. Corrupt images are removed, images are resized to 128×128, batches contain 32 samples, and a 20% validation split is created with seed 123. The notebook refers to the second split as <code>test_ds</code>, so its reported “test” result comes from this held-out directory split rather than a separately documented external test dataset.</p>
+        <div class="tag-row"><span class="tag">128 × 128 RGB</span><span class="tag">Batch 32</span><span class="tag">Validation split 20%</span><span class="tag">Seed 123</span><span class="tag">Directory labels</span><span class="tag">Corrupt-file cleanup</span></div>
+      </article>
+    </section>
+
+    <section class="section" id="models">
+      <div class="section-head"><p class="kicker">Model-by-model analysis</p><h2>Classes, training strategy, and measured results.</h2><p>The metrics below are read from the saved final training epoch or notebook evaluation output. Precision describes how often predicted detections were correct; recall describes how many labeled objects were found; mAP summarizes detection quality across classes and confidence thresholds.</p></div>
+
+      <article class="model">
+        <div class="model-head"><div><p class="model-id">Model 01 · Object detector</p><h3>Soham Jadhav — YOLO11n</h3><p>A lightweight pretrained YOLO11 Nano detector selected for student hardware. The notebook targets an NVIDIA RTX 3050 Laptop GPU with 4 GB VRAM and includes dataset checks, class-count visualization, imbalance handling, training, and saved evaluation artifacts.</p></div><span class="runtime-badge">Browser + local</span></div>
+        <div class="model-grid">
+          <div class="card"><h4>Eight training classes</h4><div class="class-grid">
+            <div class="class-item"><strong>Distracted</strong><span>Driver attention appears directed away from normal driving.</span></div>
+            <div class="class-item"><strong>Drinking</strong><span>A drinking action or beverage is detected near the driver.</span></div>
+            <div class="class-item"><strong>Drowsy</strong><span>Visual cues associated with sleepiness or reduced alertness.</span></div>
+            <div class="class-item"><strong>Eating</strong><span>Food consumption activity around the driver.</span></div>
+            <div class="class-item"><strong>PhoneUse</strong><span>Mobile-phone interaction, mapped to “Phone Usage” in the app.</span></div>
+            <div class="class-item"><strong>SafeDriving</strong><span>Normal driving state; excluded from cross-model warning-box merging.</span></div>
+            <div class="class-item"><strong>Seatbelt</strong><span>Visible seatbelt usage across the driver’s body.</span></div>
+            <div class="class-item"><strong>Smoking</strong><span>Smoking-related action or object near the driver.</span></div>
+          </div></div>
+          <div class="card"><h4>Saved training configuration</h4><table class="config-table"><tr><th>Base weights</th><td><code>yolo11n.pt</code></td></tr><tr><th>Epochs / batch</th><td>50 / 16</td></tr><tr><th>Input size</th><td>640 × 640</td></tr><tr><th>Optimizer</th><td>AdamW</td></tr><tr><th>Learning schedule</th><td>Cosine LR</td></tr><tr><th>Augmentation</th><td>Mosaic 1.0, mixup 0.1</td></tr><tr><th>Other</th><td>AMP, deterministic seed 0</td></tr></table><a class="source-link" href="https://github.com/AlbatrossC/Driver-Monitoring-System/blob/main/training_notebooks/1_soham_yolo11.ipynb" target="_blank" rel="noopener noreferrer">Open YOLO11 training notebook →</a></div>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <div class="card"><h4>Final epoch detection metrics</h4><div class="metrics"><div><div class="metric-top"><span>Precision</span><strong>91.18%</strong></div><div class="metric-track"><div class="metric-fill" style="width:91.18%"></div></div></div><div><div class="metric-top"><span>Recall</span><strong>83.43%</strong></div><div class="metric-track"><div class="metric-fill blue" style="width:83.43%"></div></div></div><div><div class="metric-top"><span>mAP@0.50</span><strong>90.68%</strong></div><div class="metric-track"><div class="metric-fill" style="width:90.68%"></div></div></div><div><div class="metric-top"><span>mAP@0.50:0.95</span><strong>65.92%</strong></div><div class="metric-track"><div class="metric-fill amber" style="width:65.92%"></div></div></div></div></div>
+          <div class="card"><h4>Why this training setup matters</h4><ul><li><strong>Nano model:</strong> lowers memory and inference cost for laptops and browser export.</li><li><strong>Mixup and cosine LR:</strong> were intentionally enabled after the notebook identified strong class imbalance.</li><li><strong>Close mosaic:</strong> mosaic augmentation is disabled for the final 10 epochs to refine training on natural images.</li><li><strong>Saved artifacts:</strong> include results CSV, curves, confusion matrices, validation batches, and best/last weights.</li></ul></div>
+        </div>
+      </article>
+
+      <article class="model">
+        <div class="model-head"><div><p class="model-id">Model 02 · Object detector</p><h3>Chaitanya Kulkarni — YOLOv8n</h3><p>A compact YOLOv8 Nano detector trained for five visible driver-related activities and objects. It complements YOLO11 by providing a second independently trained source for drinking, eating, phone, seatbelt, and smoking-related detections.</p></div><span class="runtime-badge">Browser + local</span></div>
+        <div class="model-grid">
+          <div class="card"><h4>Five training classes</h4><div class="class-grid">
+            <div class="class-item"><strong>Cigarette</strong><span>Smoking-related object, mapped to “Smoking” in the unified report.</span></div>
+            <div class="class-item"><strong>Drinking</strong><span>Beverage or drinking action associated with the driver.</span></div>
+            <div class="class-item"><strong>Eating</strong><span>Food or an eating action inside the driver region.</span></div>
+            <div class="class-item"><strong>Phone</strong><span>Mobile phone activity, mapped to “Phone Usage” in the app.</span></div>
+            <div class="class-item"><strong>Seatbelt</strong><span>Visible restraint crossing the driver’s upper body.</span></div>
+          </div></div>
+          <div class="card"><h4>Saved training configuration</h4><table class="config-table"><tr><th>Base weights</th><td><code>yolov8n.pt</code></td></tr><tr><th>Epochs / saved batch</th><td>50 / 16</td></tr><tr><th>Input size</th><td>640 × 640</td></tr><tr><th>Optimizer</th><td>Ultralytics auto</td></tr><tr><th>Augmentation</th><td>Mosaic 1.0, mixup 0.0</td></tr><tr><th>Validation</th><td>Enabled every run</td></tr><tr><th>Other</th><td>AMP, deterministic seed 0</td></tr></table><a class="source-link" href="https://github.com/AlbatrossC/Driver-Monitoring-System/blob/main/training_notebooks/2_chaitanya_yolo8.ipynb" target="_blank" rel="noopener noreferrer">Open YOLOv8 training notebook →</a></div>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <div class="card"><h4>Final epoch detection metrics</h4><div class="metrics"><div><div class="metric-top"><span>Precision</span><strong>81.15%</strong></div><div class="metric-track"><div class="metric-fill" style="width:81.15%"></div></div></div><div><div class="metric-top"><span>Recall</span><strong>84.41%</strong></div><div class="metric-track"><div class="metric-fill blue" style="width:84.41%"></div></div></div><div><div class="metric-top"><span>mAP@0.50</span><strong>83.07%</strong></div><div class="metric-track"><div class="metric-fill" style="width:83.07%"></div></div></div><div><div class="metric-top"><span>mAP@0.50:0.95</span><strong>56.17%</strong></div><div class="metric-track"><div class="metric-fill amber" style="width:56.17%"></div></div></div></div></div>
+          <div class="card"><h4>How to interpret the comparison</h4><p>YOLO11 has higher final precision and mAP in its own eight-class dataset, while YOLOv8 has slightly higher recall in its five-class dataset. These are not direct leaderboard scores because the models were trained on different datasets and class sets. In the product, their outputs are used as complementary evidence and merged only after label normalization.</p><div class="tag-row"><span class="tag">Best weights evaluated</span><span class="tag">Validation split</span><span class="tag">Test workflow</span><span class="tag">Prediction samples</span></div></div>
+        </div>
+      </article>
+
+      <article class="model">
+        <div class="model-head"><div><p class="model-id">Model 03 · Whole-image classifier</p><h3>Divyanshu Mishra — Sequential CNN</h3><p>A TensorFlow/Keras convolutional neural network that classifies an entire 128×128 driver image. It achieves strong reported notebook accuracy and adds a classification perspective, but it requires TensorFlow and server-side model loading, so it is enabled only when the Flask app runs locally.</p></div><span class="runtime-badge local">Local Flask only</span></div>
+        <div class="model-grid">
+          <div class="card"><h4>Five CNN classes</h4><div class="class-grid">
+            <div class="class-item"><strong>other_activities</strong><span>Notebook training folder for activities outside the four named driving classes. The app currently presents this output as “Smoking/Drinking/Yawning”.</span></div>
+            <div class="class-item"><strong>safe_driving</strong><span>Normal driving posture without a targeted distraction behavior.</span></div>
+            <div class="class-item"><strong>talking_phone</strong><span>Driver holding or using a phone for a call.</span></div>
+            <div class="class-item"><strong>texting_phone</strong><span>Driver interacting with a phone for texting or screen input.</span></div>
+            <div class="class-item"><strong>turning</strong><span>Driver turning the head or upper body away from the forward position.</span></div>
+          </div><div class="callout" style="margin-top:14px"><strong>Training label versus display label</strong><p>The notebook’s first class is <code>other_activities</code>. The local API assigns the friendlier but narrower label “Smoking/Drinking/Yawning” to that output index. This should be described as an interface alias, not a separately trained three-action class.</p></div></div>
+          <div class="diagram" style="padding:14px">
+            <svg viewBox="0 0 520 500" role="img" aria-labelledby="cnnTitle cnnDesc"><title id="cnnTitle">CNN layer architecture</title><desc id="cnnDesc">The image passes through three convolution and pooling stages, then flattening, dense, dropout, and softmax layers.</desc><rect width="520" height="500" rx="8" fill="#fbfcfe"/><g font-family="Aptos, Segoe UI, sans-serif"><text x="24" y="31" fill="#667085" font-size="11" font-weight="700">SEQUENTIAL CNN ARCHITECTURE</text><g text-anchor="middle"><rect x="40" y="55" width="440" height="48" rx="7" fill="#ecfdf5" stroke="#a7f3d0"/><text x="260" y="84" fill="#065f46" font-size="14" font-weight="700">128 × 128 × 3 RGB image</text><path d="M260 103v18" stroke="#087f5b" stroke-width="3"/><rect x="65" y="121" width="390" height="55" rx="7" fill="#fff" stroke="#cfd7e2"/><text x="260" y="145" fill="#161a22" font-size="13" font-weight="700">Conv2D 32, 3×3, ReLU</text><text x="260" y="163" fill="#667085" font-size="10">MaxPooling2D 2×2</text><path d="M260 176v18" stroke="#087f5b" stroke-width="3"/><rect x="90" y="194" width="340" height="55" rx="7" fill="#fff" stroke="#cfd7e2"/><text x="260" y="218" fill="#161a22" font-size="13" font-weight="700">Conv2D 64, 3×3, ReLU</text><text x="260" y="236" fill="#667085" font-size="10">MaxPooling2D 2×2</text><path d="M260 249v18" stroke="#087f5b" stroke-width="3"/><rect x="115" y="267" width="290" height="55" rx="7" fill="#fff" stroke="#cfd7e2"/><text x="260" y="291" fill="#161a22" font-size="13" font-weight="700">Conv2D 128, 3×3, ReLU</text><text x="260" y="309" fill="#667085" font-size="10">MaxPooling2D 2×2</text><path d="M260 322v18" stroke="#087f5b" stroke-width="3"/><rect x="140" y="340" width="240" height="43" rx="7" fill="#eff6ff" stroke="#bfdbfe"/><text x="260" y="367" fill="#1d4ed8" font-size="13" font-weight="700">Flatten → Dense 128 ReLU</text><path d="M260 383v18" stroke="#2563eb" stroke-width="3"/><rect x="165" y="401" width="190" height="65" rx="7" fill="#161a22"/><text x="260" y="427" fill="#fff" font-size="13" font-weight="700">Dropout 0.5</text><text x="260" y="448" fill="#cbd5e1" font-size="11">Dense 5 + Softmax</text></g></g></svg>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <div class="card"><h4>Notebook training and result</h4><table class="config-table"><tr><th>Input / batch</th><td>128 × 128 / 32</td></tr><tr><th>Training epochs</th><td>15 configured</td></tr><tr><th>Optimizer / loss</th><td>Adam / sparse categorical crossentropy</td></tr><tr><th>Output activation</th><td>Softmax</td></tr><tr><th>Reported test accuracy</th><td>91.20%</td></tr><tr><th>Reported test loss</th><td>0.3044</td></tr></table><a class="source-link" href="https://github.com/AlbatrossC/Driver-Monitoring-System/blob/main/training_notebooks/3_divyanshu_cnn.ipynb" target="_blank" rel="noopener noreferrer">Open CNN training notebook →</a></div>
+          <div class="callout"><strong>Accuracy needs context</strong><p>The saved classification report contains 1,455 evaluated images and approximately 91% overall accuracy, but only <code>texting_phone</code> (116 samples) and <code>turning</code> (1,339 samples) have non-zero support. The other three classes have zero support in that output. This means the result demonstrates strong performance on the represented split, especially turning, but it does not establish balanced 91% performance across all five classes.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="preprocessing">
+      <div class="section-head"><p class="kicker">Image preprocessing</p><h2>Preparing one image for two different input formats.</h2><p>Models only accept tensors with fixed dimensions and numeric ranges. The app preserves the uploaded image’s aspect ratio for YOLO, records the scale and padding, and later uses those values to translate predicted boxes back to the original image.</p></div>
+      <div class="pipeline">
+        <article class="pipe-step"><span class="pipe-num">1</span><h3>Decode image</h3><p>The browser reads JPG/PNG files and creates an image element. Local CNN requests decode a Base64 data URL with Pillow.</p></article>
+        <article class="pipe-step"><span class="pipe-num">2</span><h3>Letterbox</h3><p>YOLO scales the image to fit inside 640×640 without distortion and fills unused space with neutral gray.</p></article>
+        <article class="pipe-step"><span class="pipe-num">3</span><h3>Normalize</h3><p>RGB byte values from 0–255 are divided by 255 to produce floating-point values from 0–1.</p></article>
+        <article class="pipe-step"><span class="pipe-num">4</span><h3>Build tensor</h3><p>YOLO pixels are reordered into NCHW shape <code>[1,3,640,640]</code>. CNN uses NHWC shape <code>[1,128,128,3]</code>.</p></article>
+        <article class="pipe-step"><span class="pipe-num">5</span><h3>Restore boxes</h3><p>YOLO output coordinates have padding offsets removed and are divided by the saved scale to match the original image.</p></article>
+      </div>
+      <div class="grid-2" style="margin-top:18px">
+        <div class="diagram">
+          <svg viewBox="0 0 560 340" role="img" aria-labelledby="letterTitle letterDesc"><title id="letterTitle">Letterbox resizing</title><desc id="letterDesc">A wide image is centered in a square canvas with gray padding above and below.</desc><rect width="560" height="340" fill="#fbfcfe"/><g font-family="Aptos, Segoe UI, sans-serif"><text x="24" y="31" fill="#667085" font-size="11" font-weight="700">ASPECT-RATIO-PRESERVING LETTERBOX</text><rect x="37" y="92" width="190" height="120" rx="6" fill="#dbeafe" stroke="#93c5fd"/><path d="M37 184l52-48 38 30 36-43 64 61" fill="none" stroke="#2563eb" stroke-width="3"/><text x="132" y="239" text-anchor="middle" fill="#161a22" font-size="12" font-weight="700">Original image</text><path d="M244 152h50" stroke="#087f5b" stroke-width="3"/><path d="M286 144l9 8-9 8" fill="none" stroke="#087f5b" stroke-width="3"/><rect x="313" y="54" width="210" height="210" rx="6" fill="#808080" stroke="#606060"/><rect x="313" y="93" width="210" height="132" fill="#dbeafe" stroke="#93c5fd"/><path d="M313 198l57-50 42 29 42-45 69 66" fill="none" stroke="#2563eb" stroke-width="3"/><text x="418" y="291" text-anchor="middle" fill="#161a22" font-size="12" font-weight="700">640 × 640 model canvas</text><text x="418" y="311" text-anchor="middle" fill="#667085" font-size="10">gray padding stores offsetY</text></g></svg>
+        </div>
+        <div class="card"><h3>Exact transformations in the app</h3><div class="formula">scale = min(640 / width, 640 / height)<br>offsetX = (640 - width × scale) / 2<br>offsetY = (640 - height × scale) / 2</div><ul><li>Canvas background: <code>#808080</code>.</li><li>Channel order: red plane, green plane, blue plane.</li><li>YOLO input data type: 32-bit floating point.</li><li>CNN local resize: direct 128×128 resize, then divide by 255.</li><li>Bounding boxes are clamped to the original image boundaries.</li></ul></div>
+      </div>
+    </section>
+
+    <section class="section" id="nms">
+      <div class="section-head"><p class="kicker">Post-processing</p><h2>How Non-Maximum Suppression removes duplicate boxes.</h2><p>YOLO can propose several boxes around the same activity. Non-Maximum Suppression (NMS) keeps the strongest candidate and removes nearby duplicates, producing a cleaner report. In this app NMS is applied after both model outputs are mapped into shared class names.</p></div>
+      <div class="nms-layout">
+        <div class="diagram">
+          <svg viewBox="0 0 620 390" role="img" aria-labelledby="nmsTitle nmsDesc"><title id="nmsTitle">NMS before and after visualization</title><desc id="nmsDesc">Overlapping phone detection boxes are reduced to the highest-confidence box.</desc><rect width="620" height="390" fill="#fbfcfe"/><g font-family="Aptos, Segoe UI, sans-serif"><text x="25" y="31" fill="#667085" font-size="11" font-weight="700">BEFORE NMS</text><text x="350" y="31" fill="#667085" font-size="11" font-weight="700">AFTER NMS</text><rect x="25" y="52" width="245" height="270" rx="7" fill="#eef2f6" stroke="#d5dce5"/><circle cx="140" cy="128" r="36" fill="#cbd5e1"/><path d="M85 274c7-75 25-101 55-101s50 26 57 101" fill="#cbd5e1"/><rect x="154" y="173" width="30" height="56" rx="5" fill="#64748b"/><rect x="132" y="151" width="80" height="107" fill="none" stroke="#be123c" stroke-width="3"/><rect x="143" y="162" width="73" height="101" fill="none" stroke="#2563eb" stroke-width="3"/><rect x="151" y="170" width="62" height="88" fill="none" stroke="#087f5b" stroke-width="3"/><g font-size="10" font-weight="700"><text x="132" y="145" fill="#be123c">0.62</text><text x="143" y="156" fill="#2563eb">0.78</text><text x="151" y="164" fill="#087f5b">0.91</text></g><path d="M284 187h47" stroke="#087f5b" stroke-width="3"/><path d="M323 179l9 8-9 8" fill="none" stroke="#087f5b" stroke-width="3"/><rect x="350" y="52" width="245" height="270" rx="7" fill="#eef2f6" stroke="#d5dce5"/><circle cx="465" cy="128" r="36" fill="#cbd5e1"/><path d="M410 274c7-75 25-101 55-101s50 26 57 101" fill="#cbd5e1"/><rect x="479" y="173" width="30" height="56" rx="5" fill="#64748b"/><rect x="476" y="170" width="62" height="88" fill="none" stroke="#087f5b" stroke-width="3"/><text x="476" y="164" fill="#087f5b" font-size="10" font-weight="700">Phone Usage 0.91</text><text x="310" y="357" text-anchor="middle" fill="#667085" font-size="11">The 0.91 box survives; lower-confidence overlapping boxes are suppressed.</text></g></svg>
+        </div>
+        <div class="card"><h3>The app’s NMS procedure</h3><ol class="algorithm" style="margin-top:16px"><li>Discard model candidates whose best class confidence is not greater than <strong>0.25</strong>.</li><li>Translate model-specific labels into shared labels: for example, <code>Phone</code> and <code>PhoneUse</code> both become <code>Phone Usage</code>.</li><li>Group boxes by their unified class and sort each group from highest to lowest confidence.</li><li>Keep the highest-confidence box, then compare it with the remaining boxes using Intersection over Union.</li><li>Suppress a box when IoU is greater than <strong>0.45</strong>. The app also treats two boxes as overlapping when either box’s center lies inside the other.</li><li>Repeat until no candidates remain, then send the surviving boxes to the result page.</li></ol><div class="formula">IoU = intersection area ÷ union area</div></div>
+      </div>
+      <div class="callout note-green" style="margin-top:18px"><strong>Cross-model merging detail</strong><p>NMS operates per unified class across detections from both YOLO models. This means two models predicting the same behavior in the same region compete on confidence. Soham’s <code>SafeDriving</code> output is intentionally skipped during the final warning-detection merge so it does not suppress or dilute actionable behavior detections.</p></div>
+    </section>
+
+    <section class="section" id="runtime">
+      <div class="section-head"><p class="kicker">Deployment architecture</p><h2>Vercel stays lightweight; local mode adds TensorFlow.</h2><p>The environment variable <code>VERCEL=1</code> separates static cloud deployment from full local execution. This keeps the hosted project within a browser-compatible stack while preserving the CNN model for demonstrations on a capable local machine.</p></div>
+      <div class="split">
+        <article class="runtime-card"><h3><span class="status-dot"></span>Vercel deployment</h3><p>The static site loads both exported ONNX YOLO models in the browser through ONNX Runtime Web. Images remain client-side for those detections. TensorFlow and the <code>.h5</code> CNN are not installed or loaded.</p><div class="tag-row"><span class="tag">YOLO11 ONNX</span><span class="tag">YOLOv8 ONNX</span><span class="tag">Browser inference</span><span class="tag">No CNN</span></div></article>
+        <article class="runtime-card local"><h3><span class="status-dot"></span>Local Flask execution</h3><p>The browser still runs both YOLO models. In addition, the UI calls <code>/api/cnn</code>; Flask lazily loads <code>models/mishra/driver_behavior_cnn.h5</code>, preprocesses the image, and returns the predicted class and confidence.</p><div class="tag-row"><span class="tag">YOLO11 ONNX</span><span class="tag">YOLOv8 ONNX</span><span class="tag">Keras CNN</span><span class="tag">TensorFlow backend</span></div><a class="source-link" href="https://github.com/AlbatrossC/Driver-Monitoring-System/blob/main/app.py" target="_blank" rel="noopener noreferrer">View Flask backend source →</a></article>
+      </div>
+    </section>
+
+    <section class="section" id="limitations">
+      <div class="section-head"><p class="kicker">Responsible interpretation</p><h2>Useful for education, not for real vehicle decisions.</h2><p>This is an academic demonstration designed for mini-projects, final-year presentations, AI labs, and viva explanations. Its metrics describe held-out project data, not every road, camera, driver, or lighting condition.</p></div>
+      <div class="grid-3">
+        <article class="card"><h3>Dataset shift</h3><p>New camera positions, nighttime footage, occlusion, image quality, clothing, and vehicle interiors can differ from training data and reduce accuracy.</p></article>
+        <article class="card"><h3>Class imbalance</h3><p>Rare behaviors may have less training support. The YOLO11 notebook addresses imbalance with augmentation, while the CNN report exposes an uneven evaluation split.</p></article>
+        <article class="card"><h3>Single-image scope</h3><p>The current product analyzes uploaded still images. It does not model temporal behavior, gaze duration, repeated warnings, vehicle telemetry, or real-time safety intervention.</p></article>
+      </div>
+      <div class="callout" style="margin-top:18px"><strong>Academic-use notice</strong><p>Do not use this project for road-safety decisions, commercial driver scoring, surveillance, insurance decisions, production ADAS, or any situation where a false positive or false negative could affect a person’s safety or rights.</p></div>
+    </section>
+
+    <section class="section" id="team">
+      <div class="section-head"><p class="kicker">Team and contributions</p><h2>Built through the Skills4Future Program.</h2><p>Developed under the Advanced Course on Green Skills and AI (Skills4Future Program), with separate ownership for model training and application infrastructure.</p></div>
+      <div class="team-grid">
+        <article class="person"><span class="person-mark">CK</span><h3>Chaitanya Kulkarni</h3><p>YOLOv8 model training, five-class driver behavior detector, validation, and model export workflow.</p></article>
+        <article class="person"><span class="person-mark">SJ</span><h3>Soham Jadhav</h3><p>YOLO11 model training, eight-class detector, class-imbalance analysis, augmentation, and evaluation artifacts.</p></article>
+        <article class="person"><span class="person-mark">DM</span><h3>Divyanshu Mishra</h3><p>CNN model training, Keras classification architecture, confusion matrix, classification report, and local model capability.</p></article>
+        <article class="person"><span class="person-mark">AP</span><h3>Anurag Pawar</h3><p>Backend logic and server infrastructure for local inference and advanced deployment scenarios.</p></article>
+      </div>
+      <div class="program">
+        <article class="card"><h3>Additional models and backend</h3><p><strong>Divyanshu Mishra</strong> trained the CNN-based model that achieves excellent accuracy on the represented evaluation data but is not browser-compatible in this project due to TensorFlow and computational requirements. It can be run locally for enhanced classification capability.</p><p><strong>Anurag Pawar</strong> developed the backend logic and server infrastructure used for advanced deployment scenarios and local CNN inference.</p><p>For complete model access, notebooks, saved training results, backend implementation, and deployment files, visit the project’s GitHub repository.</p></article>
+        <aside class="card"><div class="program-list"><div class="program-row"><span>Program</span><strong>Advanced Course on Green Skills and Artificial Intelligence</strong></div><div class="program-row"><span>Organized by</span><strong>Edunet Foundation, AICTE, Shell India Markets Pvt. Ltd.</strong></div><div class="program-row"><span>Mentor</span><strong>Professor Sarthak Narnor</strong></div><div class="program-row"><span>Project type</span><strong>Academic computer vision demonstration</strong></div></div></aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="github-panel"><div><h3>Explore the complete implementation on GitHub.</h3><p>Review the training and testing notebooks, datasets, YOLO and CNN weights, ONNX browser inference, Flask backend, Vercel configuration, and project history.</p></div><a class="button" href="https://github.com/AlbatrossC/Driver-Monitoring-System" target="_blank" rel="noopener noreferrer">Open Repository →</a></div>
+    </section>
+  </main>
+
+  <footer class="page footer"><span>Driver Monitoring System · Academic AI Project</span><span>YOLO11 · YOLOv8 · TensorFlow CNN · ONNX Runtime Web · Flask</span></footer>
+</body>
+</html>

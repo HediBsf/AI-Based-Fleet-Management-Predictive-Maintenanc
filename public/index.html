@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Driver Monitoring System Project | YOLO and CNN AI Mini Project</title>
+<meta name="description" content="Driver Monitoring System student project using YOLO object detection and local CNN classification for driver behavior analysis, demo images, and academic computer vision learning." />
+<meta name="keywords" content="driver monitoring system project, driver behavior detection project, YOLO project for students, CNN driver behavior classification, AI mini project, computer vision college project" />
+<meta name="author" content="Driver Monitoring System Project Team" />
+<meta name="robots" content="index, follow" />
+<meta name="google-site-verification" content="EZ0Ro0zG4Hc7axgonIr9RZJdN0xW3cVTMueirY8hveA" />
+<link rel="canonical" href="/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Driver Monitoring System Project" />
+<meta property="og:description" content="A student-focused AI project for driver behavior analysis using browser-side YOLO detection and local CNN classification." />
+<meta property="og:image" content="/demo-images/1_phone.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Driver Monitoring System Project" />
+<meta name="twitter:description" content="YOLO and CNN based driver monitoring project for college and university AI coursework." />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/css/index.css?v=20260713-8">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Driver Monitoring System",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web browser",
+  "description": "Student-oriented driver monitoring system project using YOLO object detection and local CNN classification for academic computer vision demonstrations.",
+  "codeRepository": "https://github.com/AlbatrossC/Driver-Monitoring-System",
+  "audience": {
+    "@type": "EducationalAudience",
+    "educationalRole": "student"
+  }
+}
+</script>
+</head>
+
+<body>
+<!-- HEADER -->
+<div class="header">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">DM</span>
+    <span class="logo-stack">
+      <span class="logo-text">Driver Monitor</span>
+      <span class="logo-caption">Safety intelligence</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a href="about.html" class="nav-link">About</a>
+    <a href="https://github.com/AlbatrossC/Driver-Monitoring-System" target="_blank" class="github-link">
+      <span>GitHub</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- HERO SECTION -->
+<div class="hero-container">
+  <div class="hero-content">
+    <div class="badge">AI safety workspace</div>
+    <h1 class="hero-title">Driver Monitoring System</h1>
+    <p class="hero-subtitle">Student AI Project for Driver Behavior Analysis</p>
+    <p class="hero-description">
+      A college-ready computer vision project that demonstrates YOLO object detection and local CNN classification on driver images.
+    </p>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <span>YOLOv8 and YOLOv11 detection workflow</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <span>Phone, seatbelt, smoking, drinking and distraction cues</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <span>Report-style outputs for project demonstrations</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <span>Local Flask mode includes the Mishra CNN model</span>
+      </div>
+    </div>
+
+    <div class="model-status" id="modelStatus">
+      <div class="model-status-title">Runtime models</div>
+      <div class="model-chip enabled">Chaitanya YOLO</div>
+      <div class="model-chip enabled">Soham YOLO</div>
+      <div class="model-chip pending" id="cnnModelChip">Checking CNN...</div>
+    </div>
+
+    <div class="performance-note">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+      </svg>
+      Built for academic project evaluation and learning, not for production vehicle safety decisions.
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <div class="upload-header">
+      <h2>Upload Images for Analysis</h2>
+      <p>Select one or multiple driver images to analyze</p>
+    </div>
+
+    <button class="btn demo-btn" id="demoBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+        <path d="M9 22V12h6v10"/>
+      </svg>
+      <span>Select Demo Images</span>
+    </button>
+
+    <div class="divider">
+      <span>or</span>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <path d="M17 8l-5-5-5 5"/>
+          <path d="M12 3v12"/>
+        </svg>
+      </div>
+      <div class="upload-text">Click to upload images</div>
+      <div class="upload-hint">JPG, PNG supported - Multiple files allowed</div>
+      <input type="file" id="fileInput" accept="image/*" multiple />
+      <div class="file-count" id="fileCount"></div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-secondary" id="clearBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span>Clear</span>
+      </button>
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <span>Process Images</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO IMAGES MODAL -->
+<div class="modal-overlay" id="demoModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-title-block">
+        <h3>Select Demo Images</h3>
+        <p>Choose sample driver frames to run through the active models.</p>
+      </div>
+      <button class="modal-close" id="closeModal" aria-label="Close modal">×</button>
+    </div>
+    
+    <div class="modal-controls">
+      <button class="control-btn" id="selectAllBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Select All</span>
+      </button>
+      <button class="control-btn" id="unselectAllBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>Unselect All</span>
+      </button>
+      <span class="selection-count" id="selectionCount">0 images selected</span>
+    </div>
+    
+    <div class="modal-body" id="modalBody">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading demo images...</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modalCloseBtn">
+        <span>Close</span>
+      </button>
+      <button class="btn btn-primary" id="modalProcessBtn" disabled>
+        <span>Process Selected Images</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSING OVERLAY -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-content">
+    <div class="processing-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+    </div>
+    <h3>Processing Images</h3>
+    <div class="progress-container">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="processing-text" id="processingText">Initializing models...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.0/dist/ort.min.js"></script>
+<script src="/static/js/index.js?v=20260713-8"></script>
+<script src="/static/js/analytics.js?v=20260713-8"></script>
+
+
+</body>
+</html>

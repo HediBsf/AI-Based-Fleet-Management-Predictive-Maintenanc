@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "installCommand": "echo \"Static Vercel deploy: no Python packages required\"",
+  "env": {
+    "VERCEL": "1"
+  },
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ]
+}
